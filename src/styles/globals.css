@@ -68,9 +68,9 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply aurora-border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply aurora-bg-background aurora-text-foreground;
   }
 }

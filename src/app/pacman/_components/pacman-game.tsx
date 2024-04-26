@@ -1,28 +1,35 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-/* eslint-disable @next/next/no-img-element */
 import { usePacmanGame } from '../_hooks/use-pacman-game';
 
 export default function PacmanGame() {
-  const { canvasRef, pacmanRef, ghostRef, start, setStart, score, lives } =
-    usePacmanGame();
+  const { parentRef, start, score, lives, handleStartGame } = usePacmanGame();
 
   return (
-    <div>
-      <span
-        onClick={() => setStart(!start)}
+    <div ref={parentRef}>
+      <div
         className={cn(
-          'aurora-flex aurora-items-center aurora-justify-center aurora-text-white aurora-text-center aurora-text-3xl aurora-cursor-pointer',
+          'aurora-flex aurora-items-center aurora-justify-center aurora-gap-x-4',
           start && 'aurora-mb-4',
         )}
       >
-        {start ? 'Stop' : 'Start'}
-      </span>
-      {start && <canvas ref={canvasRef} width={421} height={461}></canvas>}
-      <div className="aurora-hidden">
-        <img ref={pacmanRef} src="/pacman/animations.gif" alt="" />
-        <img ref={ghostRef} src="/pacman/ghost.png" alt="" />
+        {!start && (
+          <button
+            onClick={handleStartGame}
+            className="aurora-flex aurora-items-center aurora-justify-center aurora-text-white aurora-text-center aurora-text-3xl aurora-cursor-pointer"
+          >
+            Start
+          </button>
+        )}
+        {lives == 0 && (
+          <button
+            onClick={handleStartGame}
+            className="aurora-flex aurora-items-center aurora-justify-center aurora-text-white aurora-text-center aurora-text-3xl aurora-cursor-pointer"
+          >
+            Exit
+          </button>
+        )}
       </div>
       {start && (
         <div className="aurora-flex aurora-items-center aurora-justify-between aurora-mt-4">

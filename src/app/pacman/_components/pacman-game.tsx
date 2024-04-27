@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 import { usePacmanGame } from '../_hooks/use-pacman-game';
 
 export default function PacmanGame() {
-  const { parentRef, start, score, lives, handleStartGame } = usePacmanGame();
+  const { parentRef, start, score, lives, handleStartGame, handleRestart } =
+    usePacmanGame();
 
   return (
     <div ref={parentRef}>
@@ -28,6 +29,14 @@ export default function PacmanGame() {
             className="aurora-flex aurora-items-center aurora-justify-center aurora-text-white aurora-text-center aurora-text-3xl aurora-cursor-pointer"
           >
             Exit
+          </button>
+        )}
+        {lives == 0 && (
+          <button
+            onClick={handleRestart}
+            className="aurora-flex aurora-items-center aurora-justify-center aurora-text-white aurora-text-center aurora-text-3xl aurora-cursor-pointer"
+          >
+            Restart
           </button>
         )}
       </div>

@@ -27,6 +27,7 @@ export const usePacmanGame = () => {
   const ghostRef = useRef<HTMLImageElement | null>(null);
 
   const [start, setStart] = useState<boolean>(false);
+  const [restart, setRestart] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [lives, setLives] = useState<number>(3);
 
@@ -138,6 +139,7 @@ export const usePacmanGame = () => {
 
       const gameOver = () => {
         drawGameOver();
+        setRestart(false);
         clearInterval(gameInterval);
       };
 
@@ -342,6 +344,18 @@ export const usePacmanGame = () => {
     };
   }, [pacmanGame, start]);
 
+  useEffect(() => {
+    if (restart) {
+      pacmanGame();
+    }
+
+    return () => {
+      if (!restart) {
+        removeComponent();
+      }
+    };
+  }, [pacmanGame, restart]);
+
   const resetGame = () => {
     setScore(0);
     setLives(3);
@@ -359,11 +373,17 @@ export const usePacmanGame = () => {
     setStart(true);
   };
 
+  const handleRestart = () => {
+    resetGame();
+    setRestart(true);
+  };
+
   return {
     parentRef,
     start,
     score,
     lives,
     handleStartGame,
+    handleRestart,
   };
 };

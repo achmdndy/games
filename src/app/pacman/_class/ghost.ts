@@ -290,16 +290,16 @@ export default class Ghost {
       this.height,
     );
     this.canvasContext.restore();
-    this.canvasContext.beginPath();
-    this.canvasContext.strokeStyle = 'red';
-    this.canvasContext.arc(
-      this.x + ONE_BLOCK_SIZE / 2,
-      this.y + ONE_BLOCK_SIZE / 2,
-      this.range * ONE_BLOCK_SIZE,
-      0,
-      2 * Math.PI,
-    );
-    this.canvasContext.stroke();
+    // this.canvasContext.beginPath();
+    // this.canvasContext.strokeStyle = 'red';
+    // this.canvasContext.arc(
+    //   this.x + ONE_BLOCK_SIZE / 2,
+    //   this.y + ONE_BLOCK_SIZE / 2,
+    //   this.range * ONE_BLOCK_SIZE,
+    //   0,
+    //   2 * Math.PI,
+    // );
+    // this.canvasContext.stroke();
   }
 
   getMapX() {

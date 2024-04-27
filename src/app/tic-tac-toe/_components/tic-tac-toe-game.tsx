@@ -4,8 +4,16 @@ import { cn } from '@/lib/utils';
 import { useTicTacToeGame } from '../_hooks/use-tic-tac-toe-game';
 
 export default function TicTacToeGame() {
-  const { parentRef, start, score, lives, handleStartGame } =
-    useTicTacToeGame();
+  const {
+    parentRef,
+    start,
+    score,
+    lives,
+    reset,
+    handleStartGame,
+    handleRestart,
+    handleReset,
+  } = useTicTacToeGame();
 
   return (
     <div ref={parentRef}>
@@ -29,6 +37,22 @@ export default function TicTacToeGame() {
             className="aurora-flex aurora-items-center aurora-justify-center aurora-text-center aurora-text-3xl aurora-cursor-pointer"
           >
             Exit
+          </button>
+        )}
+        {lives == 0 && (
+          <button
+            onClick={handleRestart}
+            className="aurora-flex aurora-items-center aurora-justify-center aurora-text-center aurora-text-3xl aurora-cursor-pointer"
+          >
+            Restart
+          </button>
+        )}
+        {reset && (
+          <button
+            onClick={handleReset}
+            className="aurora-flex aurora-items-center aurora-justify-center aurora-text-center aurora-text-3xl aurora-cursor-pointer"
+          >
+            Reset
           </button>
         )}
       </div>

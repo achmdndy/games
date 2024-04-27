@@ -8,6 +8,8 @@ export const useTicTacToeGame = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [start, setStart] = useState<boolean>(false);
+  const [restart, setRestart] = useState<boolean>(false);
+  const [reset, setReset] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [lives, setLives] = useState<number>(5);
 
@@ -44,24 +46,18 @@ export const useTicTacToeGame = () => {
     const context = canvasContext ?? undefined;
 
     if (context) {
-      const players: string[] = ['X', 'O'];
+      let localScore: number = 0;
+      let localLives: number = 5;
 
-      let currentPlayer: number;
-      const available: number[][] = [];
+      const ai: string = 'X';
+      const human: string = 'O';
+      let currentPlayer: string = human;
 
-      const setup = () => {
-        const randomIndex = Math.floor(Math.random() * players.length);
-        currentPlayer = randomIndex;
-
-        for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
-          for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
-            available.push([j, i]);
-          }
-        }
-      };
+      const w = BOARD_WIDTH / 3;
+      const h = BOARD_HEIGHT / 3;
 
       const equals3 = (a: string, b: string, c: string): boolean => {
-        return a === b && b === c && a !== '';
+        return a == b && b == c && a !== '';
       };
 
       const checkWinner = () => {
@@ -120,7 +116,7 @@ export const useTicTacToeGame = () => {
         let openSpots = 0;
         for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
           for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
-            if (TICTACTOE_BOARD[i][j] === '') {
+            if (TICTACTOE_BOARD[i][j] == '') {
               openSpots++;
             }
           }
@@ -131,15 +127,6 @@ export const useTicTacToeGame = () => {
         } else {
           return winner;
         }
-      };
-
-      const nextTurn = () => {
-        const index = Math.floor(Math.random() * available.length);
-        const spot = available.splice(index, 1)[0];
-        const i = spot[0];
-        const j = spot[1];
-        TICTACTOE_BOARD[i][j] = players[currentPlayer];
-        currentPlayer = (currentPlayer + 1) % players.length;
       };
 
       const createRect = (
@@ -154,9 +141,6 @@ export const useTicTacToeGame = () => {
       };
 
       const drawBoard = () => {
-        const w = BOARD_WIDTH / 3;
-        const h = BOARD_HEIGHT / 3;
-
         context.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
         context.strokeStyle = 'black';
         context.lineWidth = 3;
@@ -183,11 +167,11 @@ export const useTicTacToeGame = () => {
             context.textBaseline = 'middle';
             context.font = '32px Arial';
 
-            if (spot === players[1]) {
+            if (spot == human) {
               context.beginPath();
               context.arc(x, y, w / 4, 0, Math.PI * 2);
               context.stroke();
-            } else if (spot === players[0]) {
+            } else if (spot == ai) {
               context.beginPath();
               context.moveTo(x - w / 4, y - h / 4);
               context.lineTo(x + w / 4, y + h / 4);
@@ -213,31 +197,50 @@ export const useTicTacToeGame = () => {
       const drawGameOver = () => {
         context.font = '30px Arial';
         context.fillStyle = 'black';
-        context.fillText('Game Over!', 130, 230);
+        context.fillText('GAME OVER!', 130, 230);
       };
 
-      const drawWin = (result: string) => {
+      const drawGameDraw = () => {
         context.font = '30px Arial';
         context.fillStyle = 'black';
-        context.fillText(`${result.toUpperCase()} WIN!`, 180, 230);
+        context.fillText('DRAW!', 130, 230);
       };
 
-      const gameOver = () => {
-        drawGameOver();
-        clearInterval(gameInterval);
+      const drawWin = () => {
+        context.font = '30px Arial';
+        context.fillStyle = 'black';
+        context.fillText('WIN!', 180, 230);
+      };
+
+      const drawLose = () => {
+        context.font = '30px Arial';
+        context.fillStyle = 'black';
+        context.fillText('YOU LOSE!', 180, 230);
       };
 
       const update = () => {
         const result = checkWinner();
         if (result != null) {
           if (result == 'Tie') {
-            gameOver();
-          } else {
-            drawWin(result);
+            drawGameDraw();
+            clearInterval(gameInterval);
+          } else if (result == human) {
+            drawWin();
+            setScore(prevScore => prevScore + 10);
+            localScore = localScore + 10;
+            clearInterval(gameInterval);
+          } else if (result == ai) {
+            drawLose();
+            setLives(prevLives => prevLives - 1);
+            localLives--;
             clearInterval(gameInterval);
           }
-        } else {
-          nextTurn();
+          setRestart(false);
+          setReset(true);
+          if (localLives == 0) {
+            drawGameOver();
+            clearInterval(gameInterval);
+          }
         }
       };
 
@@ -246,10 +249,102 @@ export const useTicTacToeGame = () => {
         update();
       };
 
-      const gameInterval = setInterval(gameLoop, 1000);
+      const scores: Record<string, number> = {
+        X: 10,
+        O: -10,
+        tie: 0,
+      };
 
-      setup();
+      const minimax = (
+        board: string[][],
+        depth: number,
+        isMaximizing: boolean,
+      ): number => {
+        const result = checkWinner();
+        if (result !== null) {
+          return scores[result];
+        }
+
+        if (isMaximizing) {
+          let bestScore = -Infinity;
+          for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
+            for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
+              if (board[i][j] == '') {
+                board[i][j] = ai;
+                const scoreMinimax = minimax(board, depth + 1, false);
+                board[i][j] = '';
+                bestScore = Math.max(scoreMinimax, bestScore);
+              }
+            }
+          }
+          return bestScore;
+        } else {
+          let bestScore = Infinity;
+          for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
+            for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
+              if (board[i][j] == '') {
+                board[i][j] = human;
+                const scoreMinimax = minimax(board, depth + 1, true);
+                board[i][j] = '';
+                bestScore = Math.min(scoreMinimax, bestScore);
+              }
+            }
+          }
+          return bestScore;
+        }
+      };
+
+      const bestMove = () => {
+        let bestScore = -Infinity;
+        let move: { i: number; j: number } = {
+          i: Math.floor(Math.random() * 3),
+          j: Math.floor(Math.random() * 3),
+        };
+        for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
+          for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
+            if (TICTACTOE_BOARD[i][j] == '') {
+              TICTACTOE_BOARD[i][j] = ai;
+              const scoreMinimax = minimax(TICTACTOE_BOARD, 0, false);
+              TICTACTOE_BOARD[i][j] = '';
+              if (scoreMinimax > bestScore) {
+                bestScore = scoreMinimax;
+                move = { i, j };
+              }
+            }
+          }
+        }
+
+        TICTACTOE_BOARD[move.i][move.j] = ai;
+        currentPlayer = human;
+      };
+
+      const handleClickCanvas = (event: MouseEvent) => {
+        if (currentPlayer === human) {
+          const rect = canvasRef.current?.getBoundingClientRect();
+          const x = event.clientX - rect!.left;
+          const y = event.clientY - rect!.top;
+
+          const i = Math.floor(x / w);
+          const j = Math.floor(y / h);
+
+          if (TICTACTOE_BOARD[j][i] == '') {
+            TICTACTOE_BOARD[j][i] = human;
+            currentPlayer = ai;
+            bestMove();
+          }
+        }
+      };
+
+      const gameInterval = setInterval(gameLoop, 1000 / 30);
+
+      bestMove();
       gameLoop();
+
+      canvasRef.current?.addEventListener('click', handleClickCanvas);
+
+      return () => {
+        canvasRef.current?.removeEventListener('click', handleClickCanvas);
+      };
     }
   }, []);
 
@@ -264,6 +359,18 @@ export const useTicTacToeGame = () => {
       }
     };
   }, [start, tictactoeGame]);
+
+  useEffect(() => {
+    if (restart) {
+      tictactoeGame();
+    }
+
+    return () => {
+      if (!restart) {
+        removeComponent();
+      }
+    };
+  }, [restart, tictactoeGame]);
 
   const resetGame = () => {
     setScore(0);
@@ -282,5 +389,26 @@ export const useTicTacToeGame = () => {
     setStart(true);
   };
 
-  return { parentRef, start, score, lives, handleStartGame };
+  const handleRestart = () => {
+    resetGame();
+    setRestart(true);
+  };
+
+  const handleReset = () => {
+    resetTicTacToeBoard();
+    removeComponent();
+    setRestart(true);
+    setReset(false);
+  };
+
+  return {
+    parentRef,
+    start,
+    score,
+    lives,
+    reset,
+    handleStartGame,
+    handleRestart,
+    handleReset,
+  };
 };

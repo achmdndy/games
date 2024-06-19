@@ -46,7 +46,7 @@ export const useTicTacToeGame = () => {
     const context = canvasContext ?? undefined;
 
     if (context) {
-      let localScore: number = 0;
+      // const localScore: number = 0;
       let localLives: number = 5;
 
       const ai: string = 'X';
@@ -206,11 +206,11 @@ export const useTicTacToeGame = () => {
         context.fillText('DRAW!', 130, 230);
       };
 
-      const drawWin = () => {
-        context.font = '30px Arial';
-        context.fillStyle = 'black';
-        context.fillText('WIN!', 180, 230);
-      };
+      // const drawWin = () => {
+      //   context.font = '30px Arial';
+      //   context.fillStyle = 'black';
+      //   context.fillText('WIN!', 180, 230);
+      // };
 
       const drawLose = () => {
         context.font = '30px Arial';
@@ -225,10 +225,19 @@ export const useTicTacToeGame = () => {
             drawGameDraw();
             clearInterval(gameInterval);
           } else if (result == human) {
-            drawWin();
-            setScore(prevScore => prevScore + 10);
-            localScore = localScore + 10;
+            for (let i = 0; i < TICTACTOE_BOARD.length; i++) {
+              for (let j = 0; j < TICTACTOE_BOARD[0].length; j++) {
+                TICTACTOE_BOARD[i][j] = ai;
+              }
+            }
+            drawLose();
+            setLives(prevLives => prevLives - 1);
+            localLives--;
             clearInterval(gameInterval);
+            // drawWin();
+            // setScore(prevScore => prevScore + 10);
+            // localScore = localScore + 10;
+            // clearInterval(gameInterval);
           } else if (result == ai) {
             drawLose();
             setLives(prevLives => prevLives - 1);

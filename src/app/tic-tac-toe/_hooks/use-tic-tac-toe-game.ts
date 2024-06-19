@@ -295,6 +295,12 @@ export const useTicTacToeGame = () => {
       };
 
       const bestMove = () => {
+        if (TICTACTOE_BOARD[1][1] === '') {
+          TICTACTOE_BOARD[1][1] = ai;
+          currentPlayer = human;
+          return;
+        }
+
         let bestScore = -Infinity;
         let move: { i: number; j: number } = {
           i: Math.floor(Math.random() * 3),
